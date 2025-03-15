@@ -1,0 +1,16 @@
+.dark {
+  background-color: #f3f4f6;
+}
+.ant-menu-item.ant-menu-item-selected {
+  background-color: #fff;
+}
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.iiii .ant-popover-inner-content {
+  height: 100%;
+}
