@@ -1,0 +1,11 @@
+@import "./common.scss";
+@import "./global-variables.scss";
+html,
+body,
+#root {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

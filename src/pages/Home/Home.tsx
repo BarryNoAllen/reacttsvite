@@ -1,21 +1,51 @@
-import React, { useState } from 'react';
-import Popover from './Popover'
+import React, { useState, useRef, useEffect } from "react";
+import useStreamFetch from "../../hooks/useStreamFetch";
+import { Button } from "antd";
+
 const Home: React.FC = () => {
-  // 使用 useState 来控制 Popover 的显示与隐藏
-  const [visible, setVisible] = useState(false);
+  const [text, setText] = useState("");
+  const textRef = useRef(text);
+  const animationFrameRef = useRef<number | null>(null); // 用于存储 requestAnimationFrame 的 ID
 
-  // 处理 Popover 显示状态变化的函数
-  const handleVisibleChange = (newVisible: boolean) => {
-    setVisible(newVisible);
-  };
+  const { loading, run } = useStreamFetch({
+    url: "/api/stream",
+    onValue: (value: { content: string; code: number }) => {
+      const newText = value.content;
+      let index = 0;
+      const showText = () => {
+        if (index < newText.length) {
+          textRef.current = textRef.current + newText[index];
+          setText(textRef.current);
+          index++;
+          animationFrameRef.current = requestAnimationFrame(showText);
+        }
+      };
 
-  // 处理点击 Popover 内容时关闭 Popover 的函数
-  const handleClickContent = () => {
-    setVisible(false);
+      animationFrameRef.current = requestAnimationFrame(showText);
+    },
+  });
+
+  // 组件卸载时取消动画帧
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+  const onClick = () => {
+    setText("");
+    textRef.current = "";
+    run({ prompt: "你好" });
   };
 
   return (
     <div>
+      <div>{text}</div>
+      <Button onClick={onClick} loading={loading}>
+        请求数据
+      </Button>
     </div>
   );
 };
