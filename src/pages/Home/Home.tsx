@@ -1,51 +1,42 @@
 import React, { useState, useRef, useEffect } from "react";
-import useStreamFetch from "../../hooks/useStreamFetch";
+// import useStreamFetch from "../../hooks/useStreamFetch";
 import { Button } from "antd";
+// import useWebsocket from "../../hooks/useWebsocket";
+import useSpeedArray from "../../hooks/useSpeedArray";
 
 const Home: React.FC = () => {
   const [text, setText] = useState("");
-  const textRef = useRef(text);
-  const animationFrameRef = useRef<number | null>(null); // 用于存储 requestAnimationFrame 的 ID
-
-  const { loading, run } = useStreamFetch({
-    url: "/api/stream",
-    onValue: (value: { content: string; code: number }) => {
-      const newText = value.content;
-      let index = 0;
-      const showText = () => {
-        if (index < newText.length) {
-          textRef.current = textRef.current + newText[index];
-          setText(textRef.current);
-          index++;
-          animationFrameRef.current = requestAnimationFrame(showText);
-        }
-      };
-
-      animationFrameRef.current = requestAnimationFrame(showText);
+  const [arr, setArr] = useState([]);
+  const { addItems, pause, play } = useSpeedArray<number>(arr, {
+    onValue: (v) => {
+      console.log(v, "onValue");
     },
   });
-
-  // 组件卸载时取消动画帧
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
+  // const { run } = useWebsocket({
+  //   globalDataRef: resRef,
+  // });
+  // const { loading, run } = useStreamFetch({
+  //   url: "/api/stream",
+  //   onValue: (value: { content: string; code: number }) => {
+  //     console.log(value, "value");
+  //     if (value.code === 200) {
+  //       setText((pre) => {
+  //         return pre + value.content;
+  //       });
+  //     }
+  //   },
+  // });
 
   const onClick = () => {
-    setText("");
-    textRef.current = "";
-    run({ prompt: "你好" });
+    addItems([1, 2, 3, 4, 5, 6, 7]);
   };
 
   return (
     <div>
       <div>{text}</div>
-      <Button onClick={onClick} loading={loading}>
-        请求数据
-      </Button>
+      <Button onClick={onClick}>请求数据</Button>
+      <Button onClick={pause}>暂停</Button>
+      <Button onClick={play}>继续</Button>
     </div>
   );
 };

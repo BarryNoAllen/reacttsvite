@@ -56,71 +56,43 @@ const useStreamFetch = <T extends Record<string, any>>(
     let result = await reader.read();
     let buffer = "";
     while (!result.done) {
-      // 将新数据追加到buffer中
       const chunk = decoder.decode(result.value);
-      buffer += chunk;
-      //   let arr: any[] = [];
-      //   if (result.value) {
-      //     if (isValidStart(chunk) && isValidEnd(chunk)) {
-
-      //       arr = (buffer + chunk).split("\n");
-      //       arr.map((item) => {
-      //         const json = JSON.parse(item);
-      //         if (json) options?.onValue?.(json);
-      //         else options.onError?.(new Error("Failed to parse JSON"));
-      //       });
-      //     }
-      //     if (isValidStart(chunk) && !isValidEnd) {
-      //       arr = chunk.split("\n");
-      //       const _chunk = arr.pop();
-      //       buffer += _chunk;
-      //       arr.map((item) => {
-      //         const json = JSON.parse(item);
-      //         if (json) options?.onValue?.(json);
-      //         else options.onError?.(new Error("Failed to parse JSON"));
-      //       });
-      //     }
-      //     if (!isValidStart(chunk) && isValidEnd(chunk)) {
-      //       arr = (buffer + chunk).split("\n");
-      //       const _chunk = arr.pop();
-      //       buffer += _chunk;
-      //       arr.map((item) => {
-      //         const json = JSON.parse(item);
-      //         if (json) options?.onValue?.(json);
-      //         else options.onError?.(new Error("Failed to parse JSON"));
-      //       });
-      //     }
-      //     if (!isValidStart(chunk) && !isValidEnd(chunk)) {
-      //       buffer += chunk;
-      //     }
-      //   }
+      console.log("chunk", chunk);
+      try {
+        const obj = JSON.parse(buffer + chunk);
+        buffer = "";
+        // 尝试解析 JSON 对象
+        options?.onValue?.(obj);
+      } catch (error) {
+        buffer += chunk;
+      }
       result = await reader.read(); // 更新 result
     }
-    if (buffer.trim()) {
-      try {
-        const arr = buffer.split("\n").filter((item) => item);
-        const mergedArr = arr.reduce((acc: string[], cur, index, src) => {
-          if (index % 2 === 0 && src[index + 1]) {
-            const combined = [cur, src[index + 1]].join("");
-            acc.push(combined);
-          } else if (index % 2 === 0 && !src[index + 1]) {
-            console.log("Single JSON:", cur);
-            acc.push(cur);
-          }
-          return acc;
-        }, [] as string[]);
-        mergedArr.map((item) => {
-          const json = JSON.parse(item);
-          if (json) {
-            options?.onValue?.(json);
-          } else {
-            options.onError?.(new Error("Failed to parse JSON"));
-          }
-        });
-      } catch (error) {
-        console.error("Failed to parse final JSON:", buffer);
-      }
-    }
+    // if (buffer.trim()) {
+    //   try {
+    //     const arr = buffer.split("\n").filter((item) => item);
+    //     const mergedArr = arr.reduce((acc: string[], cur, index, src) => {
+    //       if (index % 2 === 0 && src[index + 1]) {
+    //         const combined = [cur, src[index + 1]].join("");
+    //         acc.push(combined);
+    //       } else if (index % 2 === 0 && !src[index + 1]) {
+    //         console.log("Single JSON:", cur);
+    //         acc.push(cur);
+    //       }
+    //       return acc;
+    //     }, [] as string[]);
+    //     mergedArr.map((item) => {
+    //       const json = JSON.parse(item);
+    //       if (json) {
+    //         options?.onValue?.(json);
+    //       } else {
+    //         options.onError?.(new Error("Failed to parse JSON"));
+    //       }
+    //     });
+    //   } catch (error) {
+    //     console.error("Failed to parse final JSON:", buffer);
+    //   }
+    // }
     setDone(true);
     options?.onDone?.();
   };
